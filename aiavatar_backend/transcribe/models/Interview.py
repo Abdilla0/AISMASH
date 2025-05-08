@@ -1,12 +1,12 @@
 from django.db import models
 
 class InterviewSession(models.Model):
-    user_id = models.CharField(max_length=255)  # Or use ForeignKey to User model if you're using auth
+    user_id = models.CharField(max_length=255)  
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Session {self.id} for User {self.user_id}"
+        return f"Session {self.id} for User {self.user_id}" 
 
 
 class InterviewResponse(models.Model):

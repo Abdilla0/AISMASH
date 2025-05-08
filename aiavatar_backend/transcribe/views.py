@@ -5,7 +5,6 @@ from rest_framework import status
 from django.conf import settings
 from django.core.files import File
 from elevenlabs import ElevenLabs
-import openai
 import requests
 import os
 import time
@@ -192,25 +191,25 @@ class UploadInterviewResponseView(APIView):
         except InterviewSession.DoesNotExist:
             return Response({"error": "Invalid session ID"}, status=404)
 
-        # 🧹 Delete old response for this session/question if it exists
+      
         InterviewResponse.objects.filter(
             session=session,
             question_number=question_number
         ).delete()
 
-        # 🎤 Create new response
+      
         response = InterviewResponse.objects.create(
             session=session,
             question_number=question_number,
             audio_file=audio_file,
         )
 
-        # 📝 Transcribe audio
+        
         elevenlabs_client = ElevenLabs(api_key=settings.ELEVENLABS_API_KEY)
         result = elevenlabs_client.speech_to_text.convert(model_id="scribe_v1", file=audio_file)
         response.transcript = result.text
 
-        # 🤖 Analyze with OpenAI GPT-4o
+       
         openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
         analysis_prompt = (
             f"Analyze the following answer to question {question_number} "
@@ -239,13 +238,13 @@ class InterviewSessionResultView(APIView):
         except InterviewSession.DoesNotExist:
             return Response({"error": "Session not found"}, status=404)
 
-        # Collect all individual responses
+        
         responses = session.responses.order_by("question_number")
 
-        # Combine all analysis results into a single string
+        
         all_analysis = "\n\n".join([f"Q{r.question_number}: {r.analysis_result}" for r in responses if r.analysis_result])
 
-        # Generate a summary using OpenAI
+        
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
         prompt = f"""
